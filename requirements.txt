@@ -1,0 +1,10 @@
+streamlit 
+openai 
+oletools 
+python-dotenv
+pandas
+
+anthropic
+
+pywin32>=305; platform_system == "Windows"
+
