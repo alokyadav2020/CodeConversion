@@ -124,6 +124,7 @@ import tempfile
 import os
 from openai import AzureOpenAI  # Changed from OpenAI to AzureOpenAI
 from oletools.olevba import VBA_Parser
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
 # Set page configuration to wide layout
 st.set_page_config(layout="wide", page_title="Excel VBA to C# Converter", initial_sidebar_state="expanded")
@@ -157,18 +158,27 @@ def extract_vba_from_excel(file_bytes, original_filename):
 
     return vba_code
 
-def convert_vba_to_csharp(vba_code, api_key, api_endpoint, deployment_name):
+def convert_vba_to_csharp(vba_code, api_key=st.secrets['api_key'], api_endpoint=st.secrets['api_endpoint'], deployment_name=st.secrets['deployment_name']):
     """
     Use Azure OpenAI to convert VBA macro code into C#.
     """
     if not vba_code.strip() or vba_code.startswith("Error"):
         return "No valid VBA code found for conversion."
-    
+    print(api_key)
+    print(api_endpoint)
+    print(deployment_name)
+     
+    deployment = os.getenv("DEPLOYMENT_NAME", "gpt-4o")  
+      
+# Initialize Azure OpenAI Service client with Entra ID authentication
+   
     # Initialize Azure OpenAI client
     client = AzureOpenAI(
-        api_key=api_key,  
-        api_version="2024-11-20",  # Using a standard Azure OpenAI API version
-        azure_endpoint=api_endpoint
+        api_key= os.getenv("AZURE_OPENAI_API_KEY", api_key),  
+        # api_version="2024-11-20",  # Using a standard Azure OpenAI API version
+        azure_endpoint=os.getenv("ENDPOINT_URL",api_endpoint),
+        # azure_ad_token_provider=token_provider,  
+        api_version="2024-05-01-preview",
     )
 
     prompt = f"""
@@ -183,7 +193,7 @@ def convert_vba_to_csharp(vba_code, api_key, api_endpoint, deployment_name):
     
     try:
         response = client.chat.completions.create(
-            model=deployment_name,  # Use the deployment name instead of model name
+            model=deployment,  # Use the deployment name instead of model name
             messages=[
                 {"role": "system", "content": "You are a highly skilled C# developer with expertise in VBA conversion."},
                 {"role": "user", "content": prompt}
@@ -210,16 +220,16 @@ def main():
     )
 
     # Sidebar: Azure OpenAI configuration
-    st.sidebar.header("Azure OpenAI Configuration")
-    api_key = st.sidebar.text_input("Enter your Azure OpenAI API Key", type="password")
-    api_endpoint = st.sidebar.text_input("Azure OpenAI Endpoint", placeholder="https://your-resource-name.openai.azure.com")
-    deployment_name = st.sidebar.text_input("Model Deployment Name", placeholder="your-gpt-4-deployment")
+    # st.sidebar.header("Azure OpenAI Configuration")
+    # api_key = st.sidebar.text_input("Enter your Azure OpenAI API Key", type="password")
+    # api_endpoint = st.sidebar.text_input("Azure OpenAI Endpoint", placeholder="https://your-resource-name.openai.azure.com")
+    # deployment_name = st.sidebar.text_input("Model Deployment Name", placeholder="your-gpt-4o-deployment")
     
     # Add a hint about one of the provided keys
     st.sidebar.markdown("**Hint:** You can use one of the provided API keys.")
     
-    if not api_key or not api_endpoint or not deployment_name:
-        st.sidebar.warning("Please fill in all Azure OpenAI configuration fields.")
+    # if not api_key or not api_endpoint or not deployment_name:
+    #     st.sidebar.warning("Please fill in all Azure OpenAI configuration fields.")
 
     # File uploader in main UI
     uploaded_file = st.file_uploader("Upload an Excel file with VBA macros", type=["xlsm", "xlsb", "xls"])
@@ -232,11 +242,12 @@ def main():
             vba_code = extract_vba_from_excel(file_bytes, original_filename)
 
         # Only attempt conversion if all Azure OpenAI parameters are provided
-        if api_key and api_endpoint and deployment_name:
-            with st.spinner("Converting VBA to C# using Azure OpenAI..."):
-                csharp_code = convert_vba_to_csharp(vba_code, api_key, api_endpoint, deployment_name)
-        else:
-            csharp_code = "Azure OpenAI configuration incomplete. Please provide all required fields in the sidebar."
+        # if api_key and api_endpoint and deployment_name:
+        #     with st.spinner("Converting VBA to C# using Azure OpenAI..."):
+        #         csharp_code = convert_vba_to_csharp(vba_code, api_key, api_endpoint, deployment_name)
+        # else:
+        #     csharp_code = "Azure OpenAI configuration incomplete. Please provide all required fields in the sidebar."
+        csharp_code = convert_vba_to_csharp(vba_code)
 
         # Display results in two columns
         col1, col2 = st.columns(2)
