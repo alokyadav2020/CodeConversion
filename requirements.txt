@@ -3,7 +3,7 @@ openai
 oletools 
 python-dotenv
 pandas
-
+openpyxl
 anthropic
 azure-identity
 pywin32>=305; platform_system == "Windows"
