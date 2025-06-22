@@ -164,7 +164,7 @@ def convert_vba_to_csharp(vba_code, api_key=st.secrets['api_key'], api_endpoint=
     """
     if not vba_code.strip() or vba_code.startswith("Error"):
         return "No valid VBA code found for conversion."
-    print(api_key)
+    # print(api_key)
     print(api_endpoint)
     print(deployment_name)
      
