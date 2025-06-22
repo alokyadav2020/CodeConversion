@@ -158,15 +158,15 @@ def extract_vba_from_excel(file_bytes, original_filename):
 
     return vba_code
 
-def convert_vba_to_csharp(vba_code, api_key=st.secrets['api_key'], api_endpoint=st.secrets['api_endpoint'], deployment_name=st.secrets['deployment_name']):
+def convert_vba_to_csharp(vba_code,prompt_ ,api_key=st.secrets['api_key'], api_endpoint=st.secrets['api_endpoint'], deployment_name=st.secrets['deployment_name']):
     """
     Use Azure OpenAI to convert VBA macro code into C#.
     """
     if not vba_code.strip() or vba_code.startswith("Error"):
         return "No valid VBA code found for conversion."
     # print(api_key)
-    print(api_endpoint)
-    print(deployment_name)
+    # print(api_endpoint)
+    # print(deployment_name)
      
     deployment = os.getenv("DEPLOYMENT_NAME", "gpt-4o")  
       
@@ -181,28 +181,27 @@ def convert_vba_to_csharp(vba_code, api_key=st.secrets['api_key'], api_endpoint=
         api_version="2024-05-01-preview",
     )
 
-    prompt = f"""
-    You are an expert in converting VBA (Visual Basic for Applications) macros to C#.
-    Convert the following VBA code into C# with appropriate syntax and best practices:
+    # prompt = f"""
+    # You are an expert in converting VBA (Visual Basic for Applications) macros to C#.
+    # Convert the following VBA code into C# with appropriate syntax and best practices:
 
-    VBA CODE:
-    {vba_code}
+    # VBA CODE:
+    # {vba_code}
 
-    OUTPUT C# CODE:
-    """
+    # """
     
     try:
         response = client.chat.completions.create(
             model=deployment,  # Use the deployment name instead of model name
             messages=[
                 {"role": "system", "content": "You are a highly skilled C# developer with expertise in VBA conversion."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt_}
             ],
             temperature=0.1
         )
         csharp_code = response.choices[0].message.content
     except Exception as e:
-        csharp_code = f"Error converting VBA to C#: {e}"
+        csharp_code = f"Error converting : {e}"
 
     return csharp_code
 
@@ -234,26 +233,30 @@ def main():
     if uploaded_file is not None:
         file_bytes = uploaded_file.read()
         original_filename = uploaded_file.name
+        
 
-        with st.spinner("Extracting VBA code..."):
-            vba_code = extract_vba_from_excel(file_bytes, original_filename)
+# Let the user edit the prompt
+        prompt_text = st.text_area(
+            "Prompt for Conversion",
+            value=(
+    "You are an expert in converting VBA (Visual Basic for Applications) macros to C#.\n"
+    "Convert the following VBA code into C# with appropriate syntax and best practices:\n"
+),
+            height=120
+        )           
+        if st.button("Convert VBA"):
+            with st.spinner("Extracting VBA code..."):
+                vba_code = extract_vba_from_excel(file_bytes, original_filename)
+                csharp_code = convert_vba_to_csharp(vba_code, prompt_=f"{prompt_text} VBA Code:{vba_code}")
 
-        # Only attempt conversion if all Azure OpenAI parameters are provided
-        # if api_key and api_endpoint and deployment_name:
-        #     with st.spinner("Converting VBA to C# using Azure OpenAI..."):
-        #         csharp_code = convert_vba_to_csharp(vba_code, api_key, api_endpoint, deployment_name)
-        # else:
-        #     csharp_code = "Azure OpenAI configuration incomplete. Please provide all required fields in the sidebar."
-        csharp_code = convert_vba_to_csharp(vba_code)
-
-        # Display results in two columns
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Extracted VBA Code")
-            st.code(vba_code, language="vb")
-        with col2:
-            st.subheader("Converted C# Code")
-            st.code(csharp_code, language="csharp")
+                # Display results in two columns
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.subheader("Extracted VBA Code")
+                    st.code(vba_code, language="vb")
+                with col2:
+                    st.subheader("Converted Code")
+                    st.code(csharp_code)
 
 if __name__ == "__main__":
     main()
