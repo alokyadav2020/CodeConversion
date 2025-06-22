@@ -127,7 +127,7 @@ from oletools.olevba import VBA_Parser
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
 # Set page configuration to wide layout
-st.set_page_config(layout="wide", page_title="Excel VBA to C# Converter", initial_sidebar_state="expanded")
+
 
 def extract_vba_from_excel(file_bytes, original_filename):
     """
@@ -207,6 +207,7 @@ def convert_vba_to_csharp(vba_code, api_key=st.secrets['api_key'], api_endpoint=
     return csharp_code
 
 def main():
+    st.set_page_config(layout="wide", page_title="Excel VBA to C# Converter", initial_sidebar_state="expanded")
     st.title("Excel VBA to C# Converter (Powered by Azure OpenAI)")
     st.write(
         """
