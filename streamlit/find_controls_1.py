@@ -6,7 +6,7 @@ from openpyxl import load_workbook
 import tempfile
 import os
 from typing import Dict, List, Any
-import win32com.client as win32
+# import win32com.client as win32
 import pythoncom
 
 class ExcelControlsExtractor:
