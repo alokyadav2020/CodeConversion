@@ -43,20 +43,20 @@ def logout():
 
 role = st.session_state.role
 
-st
 
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
 
 
 admin_1 = st.Page(os.path.join("streamlit","marcos_consersion.py"),title="marcos extractor",icon=":material/security:",default=(role == "Admin"),)
+admin_2 = st.Page(os.path.join("streamlit","find_controls.py"),title="find_controls",icon=":material/security:",)
 # admin_2 = st.Page(os.path.join("streamlit","Page_3_about_industry.py"), title="About Company",icon=":material/person_add:" )
 
 
 account_pages = [logout_page]
 
 
-admin_pages = [admin_1]
+admin_pages = [admin_1,admin_2]
 
 
 
