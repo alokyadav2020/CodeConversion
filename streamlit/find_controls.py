@@ -107,7 +107,7 @@ def main():
     """)
 
     # File uploader widget
-    uploaded_file = st.file_uploader("Choose an Excel file", type=['xlsx'])
+    uploaded_file = st.file_uploader("Choose an Excel file", type=['xlsx', 'xlsm', 'xls'])
 
     if uploaded_file is not None:
         # To read file as bytes:
